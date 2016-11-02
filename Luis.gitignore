@@ -1,0 +1,26 @@
+﻿# Node Modules
+node_modules/
+
+#Components
+bower_components/
+jquery-mobile/
+
+#DB Backups
+db_backup/
+
+bin-release/
+[Oo]bj/ # FlashDevelop obj
+[Bb]in/ # FlashDevelop bin
+
+# Executables
+*.exe
+*.bat
+npm
+*.cmd
+
+#Server side files with passwords/paths
+*.php
+
+
+# Other files and folders
+.vscode/

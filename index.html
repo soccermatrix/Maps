@@ -1,0 +1,234 @@
+<!doctype html>
+<html ng-app="app">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Maps - by Luis Espinal</title>	
+	
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
+  <script>
+  //console.log(window.location)
+  //console.log(window.location.pathname.indexOf('/profiles/'))
+  if(window.location.pathname.indexOf('/profiles/') > -1){
+    //console.log('redirect')
+    window.location = 'http://profiles.luisespinal.com';
+  }
+</script>
+
+
+<script src="/js/jquery.min.js"></script>
+
+<link  href="/js/jquery.mobile-1.5.min.css" rel="stylesheet"/>
+<script src="/js/jquery.mobile-1.4.5.min.js"></script>
+
+
+<link  href="/js/jquery-ui.profiles.css" rel="stylesheet">
+<script src="/js/jquery-ui.min.js"></script>
+
+<script src="/js/lodash.js"></script>
+
+<link  href="/js/bootstrap.min.css" rel="stylesheet">
+<script src="/js/bootstrap.min.js"></script>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script src="/js/angular.js"></script>
+<script src="/js/angular-route.js"></script>
+<script src="/js/angular-resource.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+
+<link rel="stylesheet" href="/css/toggle_switch.css" />
+
+<style>
+  #mapid { 
+
+  }
+    /*
+    .leaflet-popup-content {
+      min-width:400px;
+      min-height:150px;
+      font-size:300%;
+    }
+    */
+  </style>
+  
+
+  <!-- global vars / scripts -->
+  <script>
+    var v = Math.floor((Math.random() * 10) + 1);
+  </script>
+  <script src="/js/utilities.js?v=" + v></script>
+  <script src="/js/globals.js?v=" + v></script>
+
+  <!-- sub directives -->
+  <!-- <script src="/js/user_setActiveEmployee.js?v=" + v></script> -->
+
+  <!-- main directives -->
+  <!-- <script src="/js/user_delete.js?v=" + v></script> -->
+  <!-- <script src="/js/user_insert.js?v=" + v></script> -->
+  <!-- <script src="/js/user_update.js?v=" + v></script> -->
+  <!-- <script src="/js/user_get.js?v=" + v></script> -->
+
+  <!-- controllers -->
+  <script src="/js/controller.js?v=" + v></script>
+  <script src="/js/app.js?v=" + v></script>
+
+</head>
+<body>
+  <ng-view></ng-view>
+  <div id="HomeCtrol" ng-controller="HomeCtrol" ng-init="init();">
+    <div id="banner">
+      <label id="banner-label">Single Page Application</label> <span>ALPHA</span> <span id="screenRes" style="color:white; float:right; background-color:gray;"></span>
+    </div><!-- end  banner -->
+
+    <div id="wrapper" >  
+      <div id="top_menu_options_list"></div>
+
+      <div class="cards" style="top:30px; padding:10px 20px; height:auto; min-height: auto;">
+       <h1 style="font-size: 1.5em; margin:10px 0; padding:0;">US Chronic Disease Indicators</h1>
+
+       <!-- Begin Map -->
+       <div id="map_content" style="display: inline-block; position: relative; clear: both; width:100%">
+         <div id="map_canvas" style="float:left; margin-right:0; width:70%; display: inline-flex;">
+           <div id="mapid" style="
+           width: 100%; 
+           height: 600px; 
+           position: relative;
+           border:2px solid #505865;
+           display:inline-block;
+           clear: both;"></div>
+         </div>
+         <div id="map_menu" style="float:right; width:29%; display: inline-flex; background-color:#AFB7C6; height:100%; min-height:600px; text-align:center; padding">
+           <div id="top_menu_options_list" style="display: block; width:100%; position: relative;">
+             <ul>
+               <li id="map_menu_1" style="padding-left:10px;">
+                 <span id="label_action">Hide</span> Chronic Disease Indicators<br/> 
+                 showing {{ max_markers }} of {{ geo_data_raw_totalRows }} reported cases
+                 <span id="filterBy"> </span>
+                 <!-- Rounded switch -->
+                 <div style="margin-top:10px; ">
+                    <label class="switch">
+                      <input id="mapToggleCB" type="checkbox" checked>
+                      <div class="slider round"></div>
+                    </label>
+                 </div>
+               </li>
+               <li id="map_menu_2" ng-click="increaseGeoData(100)" style="padding-left:40px;"> + 100 reported cases</li>
+               <li id="map_menu_3" ng-click="decreaseGeoData(100)" style="padding-left:40px;"> - 100 reported cases</li>
+               <!-- <li id="map_menu_3">Show..</li>
+               <li id="map_menu_4">Show..</li>
+               <li id="map_menu_5">Show..</li> -->
+             </ul>         
+             <div id="description" style="color:white; text-align: center; padding:10px; width: 100%;">
+               <div style="text-align: center; width: 100%;">Disease Information</div>
+               <!-- <input type="text" id="searchStr" ng-model="searchStr" name="searchStr" ng-change="setSearch(searchStr)"/> -->
+               <!-- <input type="text" id="searchStr" ng-model="searchStr" name="searchStr" ang-change="setSearch(searchStr)" style="color:black;"/> -->
+               <table id="description_table" style="text-align: left; font-size:.75em; display:none" ng-repeat="
+               d in data | 
+               filter: search | 
+               limitTo: 1
+               ">
+               <!-- filter: '0F4A1487-50BB-4BDA-969D-A12F460B8BC9' -->
+               <!-- limitTo: 1  -->
+               <tbody>
+                <tr>
+                  <td>ID</td>
+                  <td id="name" style="font-size:.8em; height:50px; padding:0 20px;">{{ d[1] }}</td>
+                </tr>
+                <tr>
+                  <td>Disease(s)</td>
+                  <td>
+                    <ul>
+                      <li>{{ d[12] }}</li>
+                      <li>{{ d[13] }}</li>
+                      <li>{{ d[14] }}</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td>City</td>
+                  <td>                    
+                    <ul>
+                      <li id="city"></li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td>State&nbsp;</td>
+                  <td>
+                    <ul style="background:url('/images/icon_map_pin.png') no-repeat 3px 12px; background-size:18px;">
+                      <li id="state"  ng-click="setFilter('state',d[11])">{{ d[11] }}</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Reported<br/>Cases&nbsp;</td>
+                  <td style="height:60px;">
+                      <!-- chart tasks pending -->
+                      <div id="cases" class="pod">
+                        <div id="cases_content" class="pod_content">
+                          <iframe id="cases_iframe" class="arc" src="" width="100px" height="100px" scrolling="no" frameborder="0" style="float:left;" > </iframe>
+                          <script>                          
+                          function setIframeSrc(){
+                            console.log('setIframeSrc()')
+                            console.log(admin_data)
+                            for(var i=0; i<admin_data.length; i++){
+                              if(admin_data[i][1] == geo_data_key) {
+                                console.log('geo_data_key match')
+                                var cases_total = Number(admin_data[i][19]) ? admin_data[i][19] : 0;
+                                var cases_type = admin_data[i][18];
+                                angular.element('#cases_iframe').attr('src','/includes/arc.html?value=' +
+                                cases_total +
+                                '&label=' + 
+                                cases_type + 
+                                '&size=80'
+                                ) //symbol=%25 % sign
+                              }
+                            }
+                          }
+                          </script>
+                        </div>
+                      </div>
+                  </td>
+                </tr>
+              </tbody>
+              </table>
+          </div>              
+        </div> 
+      </div>     
+    </div>
+
+    <!-- Begin Map -->
+    <script src="/js/map.js?v=" + v></script>
+    <!-- End Map -->
+
+
+  </div><!-- end cards -->
+  <div class="clear_both" style="clear:both;"></div>
+  <div id="footer">
+    Copyright &copy; www.luisespinal.com | This is a personal project inteded to apply scripting and UI-UX design concepts.<br/>
+    All work is being completed by Web Developer \ UI-UX Designer Luis Espinal.<br/><br/>
+    <!-- <a href="https://github.com/soccermatrix/Profiles" target="_blank">code @GitHub.com</a> -->
+    <a href="https://chronicdata.cdc.gov/api/views/g4ie-h725/rows.json?accessType=DOWNLOAD" target="_blank" style="color:#52D9EF">open source geo-data</a>
+              
+  </div> <!-- end footer -->  
+  <div class="clear_both" style="clear:both;"></div>
+  <!-- tools frameworks / tools -->
+  <iframe id="iframe_tools" src="/includes/list_tools_header.html" id="iframe_expertice" width="100%" height="20px" scrolling="no" frameborder="0" onload="resizeIframe($('#iframe_tools'))" style="_border:1px solid red; margin-bottom:20px"> </iframe>      
+
+</div> <!-- end wrapper -->
+
+
+<!-- confirmation dialog -->
+<div id="dialog_confirmation" class="dialog">
+ <div id="dialog_confirmation_main" class="dialog_main">
+  <div id="dialog_confirmation_message">MESSAGE HERE</div>
+</div>
+</div><!-- end delete form -->
+
+
+</div> <!-- end HomeCtrol -->
+
+</body>
+</html>
